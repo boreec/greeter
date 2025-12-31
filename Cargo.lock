@@ -218,6 +218,7 @@ name = "greeter"
 version = "0.1.0"
 dependencies = [
  "alpm",
+ "libc",
  "rand",
  "tokio",
  "zbus",
