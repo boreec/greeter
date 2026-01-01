@@ -1,6 +1,7 @@
 mod dbus;
 mod duration;
 mod pacman;
+mod random;
 mod sentences;
 
 use std::error::Error;

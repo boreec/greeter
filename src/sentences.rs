@@ -1,4 +1,4 @@
-use rand::seq::IndexedRandom;
+use crate::random::Rng;
 
 static SENTENCES: &[&str] = &[
     "Don't work too hard. The sun will expand and engulf this CPU anyway.",
@@ -11,7 +11,12 @@ static SENTENCES: &[&str] = &[
 ];
 
 pub fn welcome_message() -> &'static str {
+    let mut rng = Rng::new();
+
+    let index = rng.gen_range(SENTENCES.len() as u32) as usize;
+
     SENTENCES
-        .choose(&mut rand::rng())
-        .unwrap_or(&"The void is silent.")
+        .get(index)
+        .copied()
+        .unwrap_or("The void is silent.")
 }
