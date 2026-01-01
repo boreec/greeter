@@ -1,8 +1,9 @@
+use dbus::blocking::Connection;
+use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use std::error::Error;
 use std::fmt;
 use std::fs;
 use std::time::Duration;
-use zbus::{Connection, proxy::Proxy};
 
 #[derive(Debug, Default)]
 pub struct BootTimeRecord {
@@ -46,37 +47,20 @@ impl fmt::Display for BootTimeRecord {
     }
 }
 
-pub async fn retrieve_boot_time() -> std::result::Result<BootTimeRecord, Box<dyn Error>> {
-    let connection = Connection::system().await?;
-
-    let p = Proxy::new(
-        &connection,
+pub fn retrieve_boot_time() -> std::result::Result<BootTimeRecord, Box<dyn Error>> {
+    let conn = Connection::new_system()?;
+    let p = conn.with_proxy(
         "org.freedesktop.systemd1",
         "/org/freedesktop/systemd1",
-        "org.freedesktop.systemd1.Manager",
-    )
-    .await?;
+        Duration::from_secs(5),
+    );
+    let interface = "org.freedesktop.systemd1.Manager";
 
-    let firmware_ts: u64 = p
-        .get_property("FirmwareTimestampMonotonic")
-        .await
-        .unwrap_or(0);
-    let loader_ts: u64 = p
-        .get_property("LoaderTimestampMonotonic")
-        .await
-        .unwrap_or(0);
-    let initrd_ts: u64 = p
-        .get_property("InitRDTimestampMonotonic")
-        .await
-        .unwrap_or(0);
-    let mut userspace_ts: u64 = p
-        .get_property("UserspaceTimestampMonotonic")
-        .await
-        .unwrap_or(0);
-    let mut finish_ts: u64 = p
-        .get_property("FinishTimestampMonotonic")
-        .await
-        .unwrap_or(0);
+    let firmware_ts: u64 = p.get(interface, "FirmwareTimestampMonotonic").unwrap_or(0);
+    let loader_ts: u64 = p.get(interface, "LoaderTimestampMonotonic").unwrap_or(0);
+    let initrd_ts: u64 = p.get(interface, "InitRDTimestampMonotonic").unwrap_or(0);
+    let mut userspace_ts: u64 = p.get(interface, "UserspaceTimestampMonotonic").unwrap_or(0);
+    let mut finish_ts: u64 = p.get(interface, "FinishTimestampMonotonic").unwrap_or(0);
 
     // fallack if userspace is missing from dbus (unfinished boot)
     if userspace_ts == 0 {

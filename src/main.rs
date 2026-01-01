@@ -5,8 +5,7 @@ mod sentences;
 
 use std::error::Error;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let welcome_message = sentences::welcome_message();
     println!("Welcome back. {welcome_message}\n");
 
@@ -15,7 +14,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Ok(d) => println!("Last system update: {} ago.", duration::HumanDuration(d)),
     }
 
-    match dbus::retrieve_boot_time().await {
+    match dbus::retrieve_boot_time() {
         Err(e) => eprintln!("retrieving boot time: {}", e),
         Ok(d) => println!("boot time: {}.", d),
     }
